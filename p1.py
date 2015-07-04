@@ -23,7 +23,6 @@ while 1:
         currentValue = min(FactorsOf3, FactorsOf5)
         if (currentValue >= MaxNumber) : 
                 break
-        print currentValue
         SumOfMultiples += currentValue
 
 print "Sum = ", SumOfMultiples

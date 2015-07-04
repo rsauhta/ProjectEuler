@@ -14,7 +14,7 @@
 
 
 
-# Generates sub of even fibonacci numbers less than "maxAllowed"
+# Generates sum of even fibonacci numbers less than "maxAllowed"
 #
 def generateFibSum(maxAllowed):
         num1 = 1
