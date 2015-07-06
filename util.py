@@ -36,6 +36,25 @@ def PopulatePrimeList(n) :
 		if (CheckPrime(number)) : 
 			PrimeList.append(number)
 	
+def GetFirstNPrime(n) : 
+	"Return list of first n primes"
+
+	primeListSize = len(PrimeList)
+
+	if PrimeList: 
+		startingN = PrimeList[-1]
+	else : 
+		startingN = 1
+
+	candidatePrime = startingN 
+	while (primeListSize < n) : 
+		candidatePrime += 1
+		if (CheckPrime(candidatePrime)) : 
+			PrimeList.append(candidatePrime)
+			primeListSize += 1
+
+	return PrimeList[:n]
+
 
 def GetPrimeList(n) : 
 	"Returns list of primes <= n "
@@ -106,11 +125,18 @@ def testGetPrimeList():
 	assert(GetPrimeList(3) == [2,3])
 
 
+def testGetFirstNPrime():
+	assert(GetFirstNPrime(2) == [2, 3])
+	assert(GetFirstNPrime(1) == [2])
+	assert(GetFirstNPrime(3) == [2, 3, 5])
+	assert(GetFirstNPrime(9) == [2, 3, 5, 7, 11, 13, 17, 19, 23])
+
 
 if __name__ == "__main__":
 	testCheckPrime()
 	testPrime()
 	testFindFactor()
 	testGetPrimeList()
+	testGetFirstNPrime()
 
 
