@@ -1,4 +1,4 @@
-# https://projecteuler.net/problem=43
+# https://projecteuler.net/problem=20
 #
 #
 
@@ -6,18 +6,15 @@ import util
 import math
 
 
+factorial = 1
+for i in range(1,101):
+	factorial *= i 
 
-term1 = 1
-term2 = 1 
+print "factorial = ", factorial
 
-for i in range (3,5000):
-	temp = term2
-	term2 = term1 + term2  
-	term1 = temp
+sum=0
+while (factorial): 
+	sum += factorial % 10
+	factorial = int(factorial / 10)
 
-	if (len(str(term2)) > 999):
-		print i, " has ", 999, " digits"
-		break
-
-
-
+print sum
