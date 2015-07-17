@@ -4,43 +4,58 @@
 
 import util
 import math
+import copy
 
 
-#Filename = "p81_test.txt"
-Filename = "p81.txt"
 
-def findPath(matrix, size):
-
+def findPath(inMatrix, size):
+	matrix = copy.deepcopy(inMatrix)
 	for row in range(1,size):
 		for col in range(0,row+1):
 			if col == 0: 
-				left=9999   # really large value
-			else: 
-				left=matrix[row-col][col-1]
-			if row-col == 0: 
-				top=9999 
+				matrix[row-col][col] += matrix[row-col-1][col]
+			elif row-col == 0: 
+				matrix[row-col][col] += matrix[row-col][col-1]
 			else:
+				left=matrix[row-col][col-1]
 				top=matrix[row-col-1][col]
-			matrix[row-col][col] += min(top,left)
-
+				matrix[row-col][col] += min(top,left)
 
 	for col in range(1,size):
 		for row in range(0, size-col):
 			left=matrix[size-row-1][col+row-1]
 			top=matrix[size-row-1-1][col+row]
 			matrix[size-row-1][col+row] += min(top,left)
-	print matrix
+	return matrix
+
 	
+def printMatrix(matrix):
+	for row in matrix:
+		for col in row: 
+			print "%4d" % (col),
+		print
+
+
+def readMatrix(filename):
+	
+	matrix = []
+	with open(filename) as f:
+        	for line in f:
+                	numList = [int(x) for x in line.split(',')]
+			matrix.append(numList)
+	return matrix
 
 
 
-Matrix = []
-with open(Filename) as f:
-        for line in f:
-                numList = [int(x) for x in line.split(',')]
-		Matrix.append(numList)
-print Matrix
+matrix = readMatrix("p81_test.txt")
+solution = findPath(matrix, len(matrix))
+assert(solution[4][4] == 2427)
 
-print "solution ...."
-findPath(Matrix, 80)
+
+
+matrix = readMatrix("p81.txt")
+assert(len(matrix) == 80)
+solution = findPath(matrix, len(matrix))
+
+print "solution = ", solution[79][79] 
 
