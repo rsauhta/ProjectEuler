@@ -23,6 +23,17 @@ def CheckPrime(n):
 	return True
 
 
+def GetDivisors(n):
+	" Return a list of all proper divisors for the given number"
+	divisors = set([1])
+	for i in range(2,1+int(math.sqrt(n))):
+		if (n % i == 0):   # found a divisor
+			divisors.add(i)
+			divisors.add(int(n/i))
+	return sorted(divisors)
+		
+
+
 
 def PopulatePrimeList(n) : 
 	"Add primes up to N in PrimeList. Builds on top of exisitng PrimeList"
@@ -131,6 +142,10 @@ def testGetFirstNPrime():
 	assert(GetFirstNPrime(3) == [2, 3, 5])
 	assert(GetFirstNPrime(9) == [2, 3, 5, 7, 11, 13, 17, 19, 23])
 
+def testGetDivisors():
+	assert(GetDivisors(10) == [1,2,5])
+	assert(GetDivisors(81) == [1,3,9,27])
+	assert(GetDivisors(28) == [1,2,4,7,14])
 
 if __name__ == "__main__":
 	testCheckPrime()
@@ -138,5 +153,7 @@ if __name__ == "__main__":
 	testFindFactor()
 	testGetPrimeList()
 	testGetFirstNPrime()
+	testGetDivisors()
+
 
 
