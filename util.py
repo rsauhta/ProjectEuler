@@ -7,7 +7,19 @@ import math
 
 PrimeList = []
 
-def CheckPrime(n): 
+def CheckPrime(n):
+	" Returns true if n is prime."
+
+	if (n == 2): return True
+	if n % 2 == 0: return False
+
+	for i in range(3,int(math.sqrt(n))+1,2):
+		if (n % i  == 0) : 
+			return False
+	return True
+
+
+def _checkPrime(n): 
 	" Returns true if n is prime. Uses PrimeList assuming PrimeList contains all primes upto sqrt(N) " 
 
 	# The max prime we need to test is square root of n
@@ -44,7 +56,7 @@ def PopulatePrimeList(n) :
 		startingN = 1
 
 	for number in range (startingN+1, n+1):
-		if (CheckPrime(number)) : 
+		if (_checkPrime(number)) : 
 			PrimeList.append(number)
 	
 def GetFirstNPrime(n) : 
@@ -60,12 +72,32 @@ def GetFirstNPrime(n) :
 	candidatePrime = startingN 
 	while (primeListSize < n) : 
 		candidatePrime += 1
-		if (CheckPrime(candidatePrime)) : 
+		if (_checkPrime(candidatePrime)) : 
 			PrimeList.append(candidatePrime)
 			primeListSize += 1
 
 	return PrimeList[:n]
 
+
+def GetPrimeListFast(n) : 
+	"Returns list of primes <= n. Implementation using sieve method "
+
+	numList = [1 for i in range(0,n+1)]
+
+	for i in range(1,int(math.sqrt(n))):
+		for j in range(2*i,n,i):
+			numList[j]=0
+
+	primeList= []
+	for i in range(2,n+1):
+		if numList[i]:
+			primeList.append(i)
+
+	return primeList
+
+
+	
+	           
 
 def GetPrimeList(n) : 
 	"Returns list of primes <= n "
@@ -91,7 +123,7 @@ def FindFactor(n) :
 	primeFactors = dict()
 	PopulatePrimeList(n)
 
-	#if (CheckPrime(n)) : 
+	#if (_checkPrime(n)) : 
 		#primeFactors[n]=1
 		#return primeFactors
 
@@ -106,7 +138,7 @@ def FindFactor(n) :
 				count=count+1
 			primeFactors[prime] = count
 	if (n != 1) : 
-		assert(CheckPrime(n))
+		assert(_checkPrime(n))
 		primeFactors[n] = 1
 
 	return primeFactors
@@ -118,10 +150,16 @@ def testPrime() :
 	PopulatePrimeList(1000)
 	assert( PrimeList == PrimeTo1000)
 
+def test_checkPrime(): 
+	assert(_checkPrime(2) == True)
+	assert(_checkPrime(4) == False)
+	assert(_checkPrime(7) == True)
+
 def testCheckPrime(): 
 	assert(CheckPrime(2) == True)
 	assert(CheckPrime(4) == False)
-	assert(CheckPrime(7) == True)
+	assert(CheckPrime(997) == True)
+	assert(CheckPrime(998) == False)
 
 def testFindFactor():
 	assert(FindFactor(2) == {2:1 })
@@ -147,13 +185,19 @@ def testGetDivisors():
 	assert(GetDivisors(81) == [1,3,9,27])
 	assert(GetDivisors(28) == [1,2,4,7,14])
 
+import timeit
+
 if __name__ == "__main__":
+	test_checkPrime()
 	testCheckPrime()
 	testPrime()
 	testFindFactor()
 	testGetPrimeList()
 	testGetFirstNPrime()
 	testGetDivisors()
+
+	print timeit.timeit( 'GetPrimeList(1000000)',setup="from __main__ import GetPrimeList", number = 1)
+	print timeit.timeit( 'GetPrimeListFast(1000000)',setup="from __main__ import GetPrimeListFast", number = 1)
 
 
 
