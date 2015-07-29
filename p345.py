@@ -1,5 +1,6 @@
 # https://projecteuler.net/problem=345
 #
+import copy
 
 def printMatrix(matrix):
 	for row in matrix:
@@ -31,32 +32,66 @@ string = '''7  53 183 439 863 497 383 563  79 973 287  63 343 169 583
 813 883 451 509 615  77 281 613 459 205 380 274 302  35 805'''
 
 
-def getMatrixSum(matrix, columnList):
-	currentRow = len(matrix) - len(columnList)
-	if len(columnList) == 1:
-		return (matrix[currentRow][columnList[0]], [columnList[0]]) 
+class CacheEntry:
+	def __init__(self, colList = []):
+		self.columnList = colList
 
-	maxSum = 0
-	maxCol = 0
+	def printout(self):
+		print self.columnList
 
-	for col in range(0, len(columnList)): 
-		if (currentRow < 4): 
-			print currentRow, col
-		tempList = list(columnList)
-		del tempList[col]
-		(maxTempSum, maxTempList) = getMatrixSum(matrix,tempList)
-		#total = matrix[currentRow][columnList[col]] + getMatrixSum(matrix,tempList)
-		total = matrix[currentRow][columnList[col]] + maxTempSum
-		if total > maxSum: 
-			maxSum = total
-			maxCol = columnList[col]
-			maxAnswerList = maxTempList
-			#maxSum = max(maxSum, total)
-	#print columnList
-	#print "row = ", currentRow, " col = ", maxCol, "sum = ", maxSum, columnList
-	#maxAnswerList.append(maxCol)
-	maxAnswerList[:0] = [maxCol]
-	return (maxSum, maxAnswerList)
+	def __hash__(self):
+		return hash(str(sorted(self.columnList)))
+
+	def __eq__(self, other):
+		return sorted(self.columnList) == sorted(other.columnList)
+
+	@staticmethod
+	def testCacheEntry():
+		a = CacheEntry([1,2,3])
+		b = CacheEntry([3,1,2])
+		assert(a == b)
+		cacheDict = {a:33}
+		assert(cacheDict[b] == 33)
+
+CacheEntry.testCacheEntry()
+
+
+
+
+def findMax(matrix):
+	matrixSize = len(matrix)
+	prevCachedEntries = {CacheEntry():0}
+
+
+	for row in range(0,matrixSize):
+		newCachedEntries = {}
+		for prevEntry,prevSum in prevCachedEntries.iteritems():
+			for col in range(0,matrixSize):
+				if col not in prevEntry.columnList:
+					newEntry = copy.deepcopy(prevEntry)
+					newEntry.columnList.append(col)
+					newSum = prevSum + matrix[row][col]
+					if newEntry not in newCachedEntries:
+						newCachedEntries[newEntry] = newSum
+					elif newSum > newCachedEntries[newEntry]:
+						# round about way but this way the entry stored as the key
+						#  would contain the right column sequence
+						# for e.g [1,2,3] maybe replaced by [3,2,1] since the second combination
+						#   has a larger sum. If we didn't do the below logic, [1,2,3] would be
+						#   stored as the key
+						del(newCachedEntries[newEntry])
+						newCachedEntries[newEntry] = newSum
+
+		prevCachedEntries = newCachedEntries
+
+		#print "Processed row ", row
+		#for entry,maxSum in prevCachedEntries.iteritems():
+			#print entry.columnList, maxSum
+			
+	assert(len(prevCachedEntries) == 1)   # There should be only one entry at the end
+	keyValue =prevCachedEntries.items()[0]
+	return(keyValue[1], keyValue[0].columnList)
+
 
 
 def maxMatrixSum(matrixStr):
@@ -64,7 +99,7 @@ def maxMatrixSum(matrixStr):
 	#printMatrix(matrix)
 
 	columnList = range(0,len(matrix))
-	return getMatrixSum(matrix, columnList)
+	return findMax(matrix)
 
 
 assert(maxMatrixSum(testString)[0] == 3315)
