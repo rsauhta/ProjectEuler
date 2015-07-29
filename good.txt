@@ -1,0 +1,6 @@
+List of problems I liked solving. 
+
+Problem 92 : simple ultimately but required 2 insights to speed up
+Problem 345 : Wrote a simple implementation first but that never completed. Optimized by building up a solution 
+
+
