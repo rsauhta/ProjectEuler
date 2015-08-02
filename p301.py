@@ -60,7 +60,7 @@ assert(findBruteForce(3) == findFaster(3))
 assert(findBruteForce(10) == findFaster(10))
 	
 # handle case of < 2^30 by running findFaster routine with 29 bits. Handle the case of 2^30 directly
-print  findFaster(29) + func(2**30)
+print  findFaster(30) + func(2**30)
 
 
 
