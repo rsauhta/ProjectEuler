@@ -2,6 +2,9 @@ List of problems I liked solving.
 
 Problem 83 : start with similar 81 and 82. 83 required a slightly different approach.
 Problem 92 : simple ultimately but required 2 insights to speed up
+Problem 145 : requires careful analysis and coding but one insight is needed for an efficient solution. Brute force approach won't work. 
+Problem 171 : Took few tries to get this right. First find the right set of digits and then permute them to get different unique numbers; permuting was the tricky part
+Problem 301: Brute force solution takes too long. Figured out the general approach to speed things up but it took surprisingly long to make sure I got the logic and implementation just write. 
 Problem 345 : Wrote a simple implementation first but that never completed. Optimized by building up a solution 
 
 
