@@ -122,13 +122,10 @@ def FindFactor(n) :
 	" 18 => [(2,1), (3,2)] "
 
 	primeFactors = dict()
-	PopulatePrimeList(n)
-
-	#if (_checkPrime(n)) : 
-		#primeFactors[n]=1
-		#return primeFactors
 
 	maxPrimeToTest = int(math.sqrt(n))
+	PopulatePrimeList(maxPrimeToTest)
+
 	for prime in PrimeList : 
 		if (prime > maxPrimeToTest) : 
 			break
@@ -138,8 +135,9 @@ def FindFactor(n) :
 				n = n / prime
 				count=count+1
 			primeFactors[prime] = count
+			maxPrimeToTest = int(math.sqrt(n))
 	if (n != 1) : 
-		assert(_checkPrime(n))
+		#assert(_checkPrime(n))
 		primeFactors[n] = 1
 
 	return primeFactors
