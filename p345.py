@@ -104,7 +104,8 @@ def maxMatrixSum(matrixStr):
 
 assert(maxMatrixSum(testString)[0] == 3315)
 (maxSum, answerList) = maxMatrixSum(string)
-print maxSum, answerList
+print answerList
+print "Answer =",maxSum
 
 
 

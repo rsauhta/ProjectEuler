@@ -85,7 +85,7 @@ def readMatrix(filename):
 
 
 
-matrix = readMatrix("p81_test.txt")
+matrix = readMatrix("p081_test.txt")
 assert(len(matrix) == 5)
 assert(findPath(matrix) == 994)
 

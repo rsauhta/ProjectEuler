@@ -47,13 +47,13 @@ def readMatrix(filename):
 
 
 
-matrix = readMatrix("p81_test.txt")
+matrix = readMatrix("p081_test.txt")
 solution = findPath(matrix, len(matrix))
 assert(solution[4][4] == 2427)
 
 
 
-matrix = readMatrix("p81.txt")
+matrix = readMatrix("p081.txt")
 assert(len(matrix) == 80)
 solution = findPath(matrix, len(matrix))
 

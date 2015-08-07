@@ -37,4 +37,5 @@ for digit in range(0,10):
 # Solved this problem by looking at the before and after list e.g. for 7, there is no before,
 #  and everything in after list; so 7 is the first digit. 
 #  Found the answer 73162890
+print "Answer =",73162890
 

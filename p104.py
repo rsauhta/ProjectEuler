@@ -39,13 +39,14 @@ while True:
 
 	
 	if isPandigital(str(trailerTwo)):
-		print "Trailing matches ", fibCounter
+		#print "Trailing matches ", fibCounter
+                fibCounter
 	else: 
 		continue
 
 	fibStr = str(fibTwo)
 	if isPandigital(fibStr[:9]):
-		print "Leading matches. Answer is ", fibCounter
+		print "Answer is ", fibCounter
 		break
 
 

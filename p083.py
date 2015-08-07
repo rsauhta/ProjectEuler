@@ -90,13 +90,13 @@ def readMatrix(filename):
 import sys
 sys.setrecursionlimit(100)
 
-matrix = readMatrix("p81_test.txt")
+matrix = readMatrix("p081_test.txt")
 solution = findPath(matrix)
 assert(solution[4][4] == 2297)
 
 
 
-matrix = readMatrix("p81.txt")
+matrix = readMatrix("p081.txt")
 assert(len(matrix) == 80)
 solution = findPath(matrix)
 
