@@ -1,5 +1,6 @@
 List of problems I liked solving. 
 
+Problem 76 : Ultimately turned out to be simple but it took me a while to get on the right track
 Problem 83 : start with similar 81 and 82. 83 required a slightly different approach.
 Problem 92 : simple ultimately but required 2 insights to speed up
 Problem 145 : requires careful analysis and coding but one insight is needed for an efficient solution. Brute force approach won't work. 
