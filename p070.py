@@ -5,59 +5,58 @@ import math
 import util
 import timeit
 
+
+
 def phi(n):
 	"Returns totient function for given n"
+	factorsDict = util.FindFactor(n)
 
-	util.FindFactor(n)
-	return 1
+        # It is easier to compute the opposite of phi
+        notPrimeTotal = 0  # count numbers <=n and share at least one factor with n
+              
+        # Let's say number has prime factor 2, then notPrimeTotal = (n/2)
+        # If number has prime factors 2,3   notPrimeTotal = (n/2 + n/3) - (n/6)
+        # If number has prime factor 2,3,5  notPrimeTotal = (n/2 + n/3 + n/5) - (n/6+n/10+n/15) + (n/30)
+        #   See how each successive row builds on the previous one. We will track that using a two dimensional
+        #   array
+
+        grid = []   # A two dimensional array. 1st row contains factor one at a time, second contains factors 2 at a time and so on
+                    # We will keep computing notPrimeTotal at the same time
+        for factor in factorsDict.keys(): 
+                #print "processing", factor, grid
+
+                # work bottom up in the grid to add larger factor combos first since those build on the previous rows
+                grid.append([])   
+                for i in range(len(grid)-1,0,-1): 
+                        # multiply each element of previous row with current factor and add to current row
+                        for num in grid[i-1]:
+                                newNum = factor*num
+                                grid[i].append(newNum)
+                                quotient = n/newNum
+                                if i%2 == 0:
+                                        notPrimeTotal += quotient
+                                else:
+                                        notPrimeTotal -= quotient
+
+                grid[0].append(factor)
+                notPrimeTotal += n/factor
 
 
-def divisorCount(n):
-	count=0
-	root = math.sqrt(n)
-	for i in range(2,1+int(root)):
-		if (n % i == 0):      # found a divisor
-			count += 2  
+        #print grid
+        #print "not primes = ", notPrimeTotal, " for ", n
+        return n - notPrimeTotal
 
-	if root == int(root):   # perfect square
-		count -= 1
-	return count
-
-def divisorCount2(n):
-	count=1
-	factorDict = util.FindFactor(n)
-	print factorDict
-	for primePower in factorDict.values():
-		count = count*(primePower+1)
-
-	return count-2  # since we counted 1 and n also as divisors
-
-
-def div2(n):
-	count = 0
-	for i in range(1,n):
-		count += divisorCount2(i)
-	return count
-
-def div1(n):
-	count = 0
-	for i in range(1,n):
-		count += divisorCount(i)
-	return count
+                
 
 MaxN = 10**7
 util.PopulatePrimeList(int(math.sqrt(MaxN)))
 
-#print divisorCount(9), divisorCount2(9)
-#print divisorCount(144), divisorCount2(144)
-#assert(div1(87109) == div2(87109))
-print divisorCount2(87109)
-
-#print timeit.timeit('div1(1000000)', number=1, setup='from __main__ import div1')
-#print timeit.timeit('div2(10000000)', number=1, setup='from __main__ import div2')
+assert(phi(9) == 6)
+assert(phi(10) == 4)
 
 
-#util.PopulatePrimeList(MaxN)
+for n in range(2,MaxN):
+        if n % 10000 == 0: print n
+        val = phi(n)
 
-#print phi(87109)
 
