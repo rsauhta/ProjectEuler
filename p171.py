@@ -6,6 +6,7 @@ import math
 
 MaxDigits = 20
 DigitComboCache = {}
+DigitComboDictCache = {}
 CacheHits = 0
 CacheMiss = 0
 
@@ -17,22 +18,45 @@ def findDigitCombinations(digitList):
 	#  Set lastDigit to 10 to allow any digit 0-9 to be used to start the number
 	#
 
-	# reset cache every invocation, so cache is only helping for nested recursions
-	DigitComboCache = {}
-	return _findDigitCombinations(digitList,MaxDigits,10)
+	sortedDigitList = sorted(digitList)
+	digitListStr = str(sortedDigitList)
+
+	if digitListStr in DigitComboDictCache:
+		numCombos, digitDict = DigitComboDictCache[digitListStr]
+		#print "Cache hit ", digitDict 
+	else: 
+		numCombos, multipleList = _findDigitCombinations(sortedDigitList,MaxDigits,10)
+		#print "===", numCombos, multipleList, sortedDigitList 
+		digitDict = {}
+		for i in range(0,10):
+			digitInstance = sortedDigitList[i]
+			if digitInstance in digitDict:
+				assert(multipleList[i] == digitDict[digitInstance])
+			digitDict[digitInstance] = multipleList[i]
+
+		DigitComboDictCache[digitListStr] = (numCombos, digitDict)
+
+	# compute sum of different combinations
+	comboTotal = 0
+	for digit in range(0,10): 
+		digitInstances = digitList[digit]
+		comboTotal += digit * digitDict[ digitInstances]
+
+	return (numCombos, comboTotal)
 
 
 
-def _findDigitCombinations(inDigitList, numDigits, lastDigit):
+def _findDigitCombinations(digitList, numDigits, lastDigit):
 	'''
 	digitList specifies how many instances of each digit are present
 	numDigits gives the number of digit in final number
 	lastDigit tracks what digit was used by parent in recursion chain.. we can't use that 
 	   for current digit position
 
-	Returns two tuple (numCombos, comboTotal) where
+	Returns two tuple (numCombos, multipleForDigit) where
 	   	numCombos is number of unique numbers
-	   	comboTotal is sum of all the number
+	   	multipleForDigit is a list that gives multiple for each digit to get the sum
+		                you would multiply digit value with its corresponding multiple. 
 	'''
 
 	global CacheHits, CacheMiss
@@ -67,44 +91,52 @@ def _findDigitCombinations(inDigitList, numDigits, lastDigit):
 
 	digitListStr = str(digitList) + str(lastDigit)
 	if digitListStr in DigitComboCache:
-		#print "Cache hit ", DigitComboCache[digitListStr], digitList, digitListStr
+		#print "****Cache hit ", DigitComboCache[digitListStr], digitList, digitListStr
 		CacheHits += 1
 		return DigitComboCache[digitListStr]
 
 
-	comboTotal = 0
+	multipleForDigit = [0 for i in range(0,10)]
 	numCombos = 0
+
 	for digit in range(0,10):
 		currDigitCount = digitList[digit]
 		if digit == lastDigit or currDigitCount == 0:
 			continue
 
+		#print "     "*numDigits, "**Start", numDigits, digit, numCombos, multipleForDigit
+
 		if currDigitCount == numDigits:  # all other digits have to be this
-			assert(comboTotal == 0)
+			assert(numCombos == 0)
 			numCombos = 1
-			comboTotal = int(str(digit)*numDigits)   # number of form dddd.. n times 
+			multipleForDigit[digit] = int("1"*numDigits)
+			#print "     "*numDigits, "**Between", numCombos, multipleForDigit
 			break
 
 		assert(currDigitCount < numDigits)
 		for digitCount in range(1,currDigitCount+1):
-			currentNumMultiple = int(str(digit)*digitCount)   # number of form dddd.. n times 
+			currentMultiple = int("1"*digitCount)  # this should be the multiple since we are using 
+							       #   digitCount consequetive instances 
 			digitsLeft = numDigits - digitCount
 
 			digitList[digit] -= digitCount
-			nextNumCombos, nextComboTotal = _findDigitCombinations(digitList, digitsLeft, digit)
+			nextNumCombos, nextPositionMultiple = _findDigitCombinations(digitList, digitsLeft, digit)
 			digitList[digit] += digitCount
 
 			# Let's say we found x combos in next level. For all those combos, current 
-			# digit will be present as leading digit so it would contribute x times its value
+			# digit sequence will be present in front so it would contribute x times its value
 			#
 			#print "***", digit, currDigitCount, currentNumMultiple, digitsLeft, comboTotal
-			comboTotal += nextComboTotal + nextNumCombos * currentNumMultiple * (10**digitsLeft)
+			multipleForDigit = [x+y for x,y in zip(multipleForDigit, nextPositionMultiple)]
+			multipleForDigit[digit] += nextNumCombos * currentMultiple  * (10**digitsLeft)
 			numCombos  += nextNumCombos
 
+			#comboTotal += nextComboTotal + nextNumCombos * currentMultiple * (10**digitsLeft)
+		#print "     "*numDigits, "**End", numDigits, digit, numCombos, multipleForDigit
 
-	DigitComboCache[digitListStr] = (numCombos, comboTotal)
+	DigitComboCache[digitListStr] = (numCombos, multipleForDigit)
 	CacheMiss += 1
-	#print "Cache miss ", DigitComboCache[digitListStr], digitList, digitListStr
+	#print "****Cache miss ", DigitComboCache[digitListStr], digitList, digitListStr
 
 	return DigitComboCache[digitListStr]
 
@@ -135,14 +167,14 @@ def findDigitSets(digitList, numDigits, digit=0, funcValue=0):
 		root = math.sqrt(funcValue)
 		if root == int(root):
 			counter += 1
-			#if counter % 100 ==0:
-				#print counter
-				#print "Cache miss = %d hits = %d  hit %% = %.2f size = %d"  % (CacheMiss, CacheHits, 100*CacheHits/(CacheHits+CacheMiss), len(DigitComboCache))
+			if counter % 100 ==0:
+				print counter
+				print "Cache miss = %d hits = %d  hit %% = %.2f size = %d"  % (CacheMiss, CacheHits, 100*CacheHits/(CacheHits+CacheMiss), len(DigitComboCache))
 
 			#combos = findDigitCombinations(digitList)
 			numCombos, comboTotal = findDigitCombinations(digitList)
 
-			print "%10d %4d " % (numCombos, comboTotal), digitList
+			#print "%10d %4d " % (numCombos, comboTotal), digitList
 			return comboTotal
 		else:
 			return 0
@@ -171,8 +203,11 @@ digitList = [0 for i in range(0,10)]
 # 802085511
 # 544283400
 
-MaxDigits = 3
+#digitList[9] = digitList[8] = digitList[7] = 1
+#print _findDigitCombinations(digitList, 3, 10)
+#exit()
 
+#MaxDigits = 5
 answer = findDigitSets(digitList, MaxDigits)
 print "Cache miss = %d hits = %d  hit %% = %.2f"  % (CacheMiss, CacheHits, 100*CacheHits/(CacheHits+CacheMiss))
 
