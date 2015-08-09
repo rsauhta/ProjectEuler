@@ -7,26 +7,35 @@ import math
 MaxDigits = 20
 DigitComboCache = {}
 DigitComboDictCache = {}
+
+RecurseCacheHits = 0
+RecurseCacheMiss = 0
 CacheHits = 0
 CacheMiss = 0
 
 def findDigitCombinations(digitList):
 	global MaxDigits
+	global CacheHits, CacheMiss
 
 	#  Initially I thought we would have to treat 0 as special since leading zeros are not allowed.
 	#  But we do need to process sequence with leading zeros since that gives us numbers like 1, 25, 442
-	#  Set lastDigit to 10 to allow any digit 0-9 to be used to start the number
 	#
-
+	#  Consider case with 3 digit: all numbers with two As and one B can be treated the same
+	#    where A and B are two different digits. The number of combination is 3 and sum = 111*B + 222*A
+	# 
+	#  We can reduce similar number to same signature by sorting the digitList array. We  use that to 
+	#   look up the multiple list viz. 222,111. 
+	#
 	sortedDigitList = sorted(digitList)
 	digitListStr = str(sortedDigitList)
 
 	if digitListStr in DigitComboDictCache:
+		CacheHits += 1
 		numCombos, digitDict = DigitComboDictCache[digitListStr]
-		#print "Cache hit ", digitDict 
 	else: 
+		#  Set lastDigit to 10 to allow any digit 0-9 to be used to start the number
 		numCombos, multipleList = _findDigitCombinations(sortedDigitList,MaxDigits,10)
-		#print "===", numCombos, multipleList, sortedDigitList 
+
 		digitDict = {}
 		for i in range(0,10):
 			digitInstance = sortedDigitList[i]
@@ -34,9 +43,12 @@ def findDigitCombinations(digitList):
 				assert(multipleList[i] == digitDict[digitInstance])
 			digitDict[digitInstance] = multipleList[i]
 
+		CacheMiss += 1
 		DigitComboDictCache[digitListStr] = (numCombos, digitDict)
 
-	# compute sum of different combinations
+	# compute sum of different combinations by applying the appropriate multiplaction factor to 
+	#  each digit
+	# 
 	comboTotal = 0
 	for digit in range(0,10): 
 		digitInstances = digitList[digit]
@@ -55,11 +67,11 @@ def _findDigitCombinations(digitList, numDigits, lastDigit):
 
 	Returns two tuple (numCombos, multipleForDigit) where
 	   	numCombos is number of unique numbers
-	   	multipleForDigit is a list that gives multiple for each digit to get the sum
-		                you would multiply digit value with its corresponding multiple. 
+	   	multipleForDigit is a list that gives multiple for each digit. To get the sum
+		                 multiply digit value with its corresponding multiple. 
 	'''
 
-	global CacheHits, CacheMiss
+	global RecurseCacheHits, RecurseCacheMiss
 	global DigitComboCache 
 
 	# Cache lookup needs to be inside recursive routine since the next level
@@ -70,29 +82,10 @@ def _findDigitCombinations(digitList, numDigits, lastDigit):
 	#  So lastDigit needs to be part of the key for caching
 	#
 
-	'''
-	if lastDigit == 10: 
-		digitList = sorted(inDigitList)
-	else:
-		lastDigitValue = inDigitList[lastDigit]       # save the value 
-
-		digitList = list(inDigitList)
-		del(digitList[lastDigit])
-		digitList.sort(reverse=True)         # sorting allows equivalent case to hash to same entry
-
-		digitList.append(lastDigitValue)     # we could have added to the start of list but adding to end  should be 
-	 					     #   more efficient. We can adapt by setting lastDigit=9
-						     # caching should work as long as lastDigit is always 9 before 
-						     #   we do lookup
-		assert(len(digitList) == 10)
-		lastDigit = 9
-	
-	'''
-
 	digitListStr = str(digitList) + str(lastDigit)
 	if digitListStr in DigitComboCache:
 		#print "****Cache hit ", DigitComboCache[digitListStr], digitList, digitListStr
-		CacheHits += 1
+		RecurseCacheHits += 1
 		return DigitComboCache[digitListStr]
 
 
@@ -104,13 +97,10 @@ def _findDigitCombinations(digitList, numDigits, lastDigit):
 		if digit == lastDigit or currDigitCount == 0:
 			continue
 
-		#print "     "*numDigits, "**Start", numDigits, digit, numCombos, multipleForDigit
-
 		if currDigitCount == numDigits:  # all other digits have to be this
 			assert(numCombos == 0)
 			numCombos = 1
 			multipleForDigit[digit] = int("1"*numDigits)
-			#print "     "*numDigits, "**Between", numCombos, multipleForDigit
 			break
 
 		assert(currDigitCount < numDigits)
@@ -131,11 +121,8 @@ def _findDigitCombinations(digitList, numDigits, lastDigit):
 			multipleForDigit[digit] += nextNumCombos * currentMultiple  * (10**digitsLeft)
 			numCombos  += nextNumCombos
 
-			#comboTotal += nextComboTotal + nextNumCombos * currentMultiple * (10**digitsLeft)
-		#print "     "*numDigits, "**End", numDigits, digit, numCombos, multipleForDigit
-
 	DigitComboCache[digitListStr] = (numCombos, multipleForDigit)
-	CacheMiss += 1
+	RecurseCacheMiss += 1
 	#print "****Cache miss ", DigitComboCache[digitListStr], digitList, digitListStr
 
 	return DigitComboCache[digitListStr]
@@ -156,6 +143,7 @@ def findDigitSets(digitList, numDigits, digit=0, funcValue=0):
 
 	global counter
 	global CacheHits, CacheMiss
+	global RecurseCacheHits, RecurseCacheMiss
 
 	# terminating condition for recursion
 	if numDigits == 0 or digit == 9: 
@@ -166,15 +154,15 @@ def findDigitSets(digitList, numDigits, digit=0, funcValue=0):
 		#
 		root = math.sqrt(funcValue)
 		if root == int(root):
-			counter += 1
-			if counter % 100 ==0:
-				print counter
-				print "Cache miss = %d hits = %d  hit %% = %.2f size = %d"  % (CacheMiss, CacheHits, 100*CacheHits/(CacheHits+CacheMiss), len(DigitComboCache))
-
-			#combos = findDigitCombinations(digitList)
 			numCombos, comboTotal = findDigitCombinations(digitList)
-
 			#print "%10d %4d " % (numCombos, comboTotal), digitList
+
+			counter += 1
+			if counter % 1000 ==0:
+				print "Cache (miss=%d, hits=%d %.2f%%" % (CacheMiss, CacheHits, 100*CacheHits/(CacheHits+CacheMiss)) ,
+				print "\tRecurseCache (miss=%d, hits=%d %.2f%%" % (RecurseCacheMiss, RecurseCacheHits, 100*RecurseCacheHits/(RecurseCacheHits+RecurseCacheMiss))
+
+
 			return comboTotal
 		else:
 			return 0
@@ -195,22 +183,12 @@ def findDigitSets(digitList, numDigits, digit=0, funcValue=0):
 
 digitList = [0 for i in range(0,10)]
 
-# answers that didn't work
-# 384260908
-# 55150845
-# 230537404
-# 638417039
-# 802085511
-# 544283400
-
-#digitList[9] = digitList[8] = digitList[7] = 1
-#print _findDigitCombinations(digitList, 3, 10)
-#exit()
-
 #MaxDigits = 5
 answer = findDigitSets(digitList, MaxDigits)
-print "Cache miss = %d hits = %d  hit %% = %.2f"  % (CacheMiss, CacheHits, 100*CacheHits/(CacheHits+CacheMiss))
 
+print "Cache (miss=%d, hits=%d %.2f%%" % (CacheMiss, CacheHits, 100*CacheHits/(CacheHits+CacheMiss)) ,
+print "\tRecurseCache (miss=%d, hits=%d %.2f%%" % (RecurseCacheMiss, RecurseCacheHits, 100*RecurseCacheHits/(RecurseCacheHits+RecurseCacheMiss))
 
-print "Answer for ", MaxDigits, " = ", answer, answer%10**9
+print
+print "Answer for", MaxDigits, " digits = ", answer, answer%10**9
 
