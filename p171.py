@@ -5,130 +5,41 @@ import math
 
 
 MaxDigits = 20
-DigitComboCache = {}
-DigitComboDictCache = {}
-
-RecurseCacheHits = 0
-RecurseCacheMiss = 0
-CacheHits = 0
-CacheMiss = 0
-
-def findDigitCombinations(digitList):
-	global MaxDigits
-	global CacheHits, CacheMiss
-
-	#  Initially I thought we would have to treat 0 as special since leading zeros are not allowed.
-	#  But we do need to process sequence with leading zeros since that gives us numbers like 1, 25, 442
-	#
-	#  Consider case with 3 digit: all numbers with two As and one B can be treated the same
-	#    where A and B are two different digits. The number of combination is 3 and sum = 111*B + 222*A
-	# 
-	#  We can reduce similar number to same signature by sorting the digitList array. We  use that to 
-	#   look up the multiple list viz. 222,111. 
-	#
-	sortedDigitList = sorted(digitList)
-	digitListStr = str(sortedDigitList)
-
-	if digitListStr in DigitComboDictCache:
-		CacheHits += 1
-		numCombos, digitDict = DigitComboDictCache[digitListStr]
-	else: 
-		#  Set lastDigit to 10 to allow any digit 0-9 to be used to start the number
-		numCombos, multipleList = _findDigitCombinations(sortedDigitList,MaxDigits,10)
-
-		digitDict = {}
-		for i in range(0,10):
-			digitInstance = sortedDigitList[i]
-			if digitInstance in digitDict:
-				assert(multipleList[i] == digitDict[digitInstance])
-			digitDict[digitInstance] = multipleList[i]
-
-		CacheMiss += 1
-		DigitComboDictCache[digitListStr] = (numCombos, digitDict)
-
-	# compute sum of different combinations by applying the appropriate multiplaction factor to 
-	#  each digit
-	# 
-	comboTotal = 0
-	for digit in range(0,10): 
-		digitInstances = digitList[digit]
-		comboTotal += digit * digitDict[ digitInstances]
-
-	return (numCombos, comboTotal)
+#MaxDigits = 5
 
 
+FactorialDict = None 
+def factorial(n):
+	global FactorialDict 
 
-def _findDigitCombinations(digitList, numDigits, lastDigit):
-	'''
-	digitList specifies how many instances of each digit are present
-	numDigits gives the number of digit in final number
-	lastDigit tracks what digit was used by parent in recursion chain.. we can't use that 
-	   for current digit position
+	if FactorialDict == None:
+		# First time initialization
+		FactorialDict = []
+		FactorialDict.append(1)
+		fact = 1
+		for i in range(1,MaxDigits+1):
+			fact *= i
+			FactorialDict.append(fact)
 
-	Returns two tuple (numCombos, multipleForDigit) where
-	   	numCombos is number of unique numbers
-	   	multipleForDigit is a list that gives multiple for each digit. To get the sum
-		                 multiply digit value with its corresponding multiple. 
-	'''
-
-	global RecurseCacheHits, RecurseCacheMiss
-	global DigitComboCache 
-
-	# Cache lookup needs to be inside recursive routine since the next level
-	#   recursion with less than 20 digits also benefits from the lookup
-	#
-	# We use last digit to ensure we don't double count the case when the previous digit is used again 
-	#  if lastDigit=1  then 4,1,... is not the same as 4,1,... as 1 is not allowed to be used in this pass. 
-	#  So lastDigit needs to be part of the key for caching
-	#
-
-	digitListStr = str(digitList) + str(lastDigit)
-	if digitListStr in DigitComboCache:
-		#print "****Cache hit ", DigitComboCache[digitListStr], digitList, digitListStr
-		RecurseCacheHits += 1
-		return DigitComboCache[digitListStr]
+	return FactorialDict[n]
 
 
-	multipleForDigit = [0 for i in range(0,10)]
-	numCombos = 0
+RepUnit = int("1"*MaxDigits)
 
-	for digit in range(0,10):
-		currDigitCount = digitList[digit]
-		if digit == lastDigit or currDigitCount == 0:
-			continue
+def findDigitCombo(digitList):
+	divisor = 1
+	for count in digitList:
+		divisor *= factorial(count)
 
-		if currDigitCount == numDigits:  # all other digits have to be this
-			assert(numCombos == 0)
-			numCombos = 1
-			multipleForDigit[digit] = int("1"*numDigits)
-			break
+	comboSum = 0
+	for i in range(1,10):
+		comboSum += i*digitList[i]
 
-		assert(currDigitCount < numDigits)
-		for digitCount in range(1,currDigitCount+1):
-			currentMultiple = int("1"*digitCount)  # this should be the multiple since we are using 
-							       #   digitCount consequetive instances 
-			digitsLeft = numDigits - digitCount
-
-			digitList[digit] -= digitCount
-			nextNumCombos, nextPositionMultiple = _findDigitCombinations(digitList, digitsLeft, digit)
-			digitList[digit] += digitCount
-
-			# Let's say we found x combos in next level. For all those combos, current 
-			# digit sequence will be present in front so it would contribute x times its value
-			#
-			#print "***", digit, currDigitCount, currentNumMultiple, digitsLeft, comboTotal
-			multipleForDigit = [x+y for x,y in zip(multipleForDigit, nextPositionMultiple)]
-			multipleForDigit[digit] += nextNumCombos * currentMultiple  * (10**digitsLeft)
-			numCombos  += nextNumCombos
-
-	DigitComboCache[digitListStr] = (numCombos, multipleForDigit)
-	RecurseCacheMiss += 1
-	#print "****Cache miss ", DigitComboCache[digitListStr], digitList, digitListStr
-
-	return DigitComboCache[digitListStr]
+	numCombos =  factorial(MaxDigits)/divisor
+	comboTotal = numCombos * RepUnit * comboSum  / MaxDigits
+	return numCombos, comboTotal
 
 
-	
 
 counter = 0
 
@@ -154,15 +65,11 @@ def findDigitSets(digitList, numDigits, digit=0, funcValue=0):
 		#
 		root = math.sqrt(funcValue)
 		if root == int(root):
-			numCombos, comboTotal = findDigitCombinations(digitList)
-			#print "%10d %4d " % (numCombos, comboTotal), digitList
-
 			counter += 1
 			if counter % 1000 ==0:
-				print "Cache (miss=%d, hits=%d %.2f%%" % (CacheMiss, CacheHits, 100*CacheHits/(CacheHits+CacheMiss)) ,
-				print "\tRecurseCache (miss=%d, hits=%d %.2f%%" % (RecurseCacheMiss, RecurseCacheHits, 100*RecurseCacheHits/(RecurseCacheHits+RecurseCacheMiss))
+				print counter
 
-
+			numCombos, comboTotal = findDigitCombo(digitList)
 			return comboTotal
 		else:
 			return 0
@@ -183,12 +90,9 @@ def findDigitSets(digitList, numDigits, digit=0, funcValue=0):
 
 digitList = [0 for i in range(0,10)]
 
-#MaxDigits = 5
 answer = findDigitSets(digitList, MaxDigits)
 
-print "Cache (miss=%d, hits=%d %.2f%%" % (CacheMiss, CacheHits, 100*CacheHits/(CacheHits+CacheMiss)) ,
-print "\tRecurseCache (miss=%d, hits=%d %.2f%%" % (RecurseCacheMiss, RecurseCacheHits, 100*RecurseCacheHits/(RecurseCacheHits+RecurseCacheMiss))
 
 print
-print "Answer for", MaxDigits, " digits = ", answer, answer%10**9
+print "Answer for", MaxDigits, " digits = ", answer%10**9
 
