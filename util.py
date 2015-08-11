@@ -85,8 +85,8 @@ def GetPrimeListFast(n) :
 
 	numList = [1 for i in range(0,n+1)]
 
-	for i in range(1,int(math.sqrt(n))):
-		for j in range(2*i,n,i):
+	for i in range(2,int(math.sqrt(n))):
+		for j in range(2*i,n+1,i):
 			numList[j]=0
 
 	primeList= []
