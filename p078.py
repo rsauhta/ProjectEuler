@@ -32,6 +32,13 @@ for n in xrange(2,pentaList[-1]):
 		numPartitions += sign * CoinPartitions[ n - pentaList[index]]
 		#print "     ", sign, pentaList[index], CoinPartitions[ n - pentaList[index]]
 
+	# We only need to track the last 6 digits to check for divisibility by 10**6
+	#  This speeds up the code a little bit (from 10 sec to 7 sec) but doesn't seem 
+	#  worth the optimization. Obviously in C++ implemenation this would have helped 
+	#  a lot more since native int would suffice but python makes big integer maths painless
+	#
+	# numPartitions = numPartitions % 10**6
+
 	CoinPartitions.append(numPartitions)
 	if numPartitions % 10**6 == 0:
 		print " Found answer = ", n
