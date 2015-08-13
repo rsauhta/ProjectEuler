@@ -59,14 +59,38 @@ CacheEntry.testCacheEntry()
 
 
 def findMax(matrix):
+
+	# To understand the approach, imagine you remove the last row. With the previous n-1 rows, you can 
+	#  form n-1 matrix of n-1xn-1 viz. col 2..n, 1,3..n, 1,2,4..n --  1..n-1 
+	# If you now add the last row the max sum would be mat[n,1]+maxFor[2..n]  mat[n,2]+max[1,3..n] -- so forth
+	# 
+	# We will use this approach of incrementally building the solution. First start with the first row and 1x matrix
+	# Then for the next row, iterate through each column (1..n). Add this column to each of the sums from previous iteration
+	#  for the second row we would end up with n*(n-1) sums, each caches by column combinations (1,2) (1,3) ... (n-1)n. 
+	#  However (1,2) and (2,1) are the same matrix so we should collapse that to get n(n-1)/2 sums. We do this by mapping 
+	#    (1,2) and (2,1) to same key as can be seen in class CacheEntry 
+	#  As we iterate the number of sums being maintained in cache would grow until the midpoint and then unique sum being
+	# maintained will start reducing till we have just one at the end for 1..n columns.
+	# 
+
+
 	matrixSize = len(matrix)
+
+	# see the cache 
 	prevCachedEntries = {CacheEntry():0}
 
 
+	# Add a new row a
 	for row in range(0,matrixSize):
+		
+		# Build a new cache for the row x row matrix. This will build on previous cache for (row-1)x(row-1) matrix 
 		newCachedEntries = {}
+
+		# For each cache entry, try all combination of adding all column position for the row being processed
 		for prevEntry,prevSum in prevCachedEntries.iteritems():
 			for col in range(0,matrixSize):
+
+				# Ignore cols that are already in the cache entry. 
 				if col not in prevEntry.columnList:
 					newEntry = copy.deepcopy(prevEntry)
 					newEntry.columnList.append(col)
