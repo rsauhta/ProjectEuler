@@ -17,8 +17,6 @@
 #   neither could these 6 numbers fit in 5 inner nodes.
 
 
-MaxSoFar = 0
-
 def fillSegment(segmentId, total, numUsed, outerNodes, innerNodes):
 	global MaxSoFar
 
@@ -26,7 +24,6 @@ def fillSegment(segmentId, total, numUsed, outerNodes, innerNodes):
 	#print nesting, "FillSegment = ", segmentId, total, numUsed, outerNodes, innerNodes
 
 	if segmentId == 4:
-		print nesting, "total = ",innerNodes[4] + innerNodes[0] + outerNodes[0], total
 		if innerNodes[4] + innerNodes[0] + outerNodes[4] != total:
 			print "Missed at last step"
 			return 
@@ -36,9 +33,8 @@ def fillSegment(segmentId, total, numUsed, outerNodes, innerNodes):
 			seq += str(outerNodes[segId])
 			seq += str(innerNodes[segId])
 			seq += str(innerNodes[(segId+1)%5])
-		print "Found an answer: ", seq
-		MaxSoFar = max(MaxSoFar, int(seq))
-		return
+		print "Answer: ", seq
+		exit()
 
 	nextInner = total - outerNodes[segmentId] - innerNodes[segmentId]
 	if nextInner < 1 or nextInner > 9 or numUsed[nextInner] == 1:
@@ -49,7 +45,8 @@ def fillSegment(segmentId, total, numUsed, outerNodes, innerNodes):
 
 	#print nesting, "set inner to", nextInner
 
-	for nextOuter in range(OuterNodes[0]+1,11):  # outer nodes should be greater than first one (index 0)
+	#for nextOuter in range(OuterNodes[0]+1,11):  # outer nodes should be greater than first one (index 0)
+	for nextOuter in range(9,OuterNodes[0],-1)+[10]:  # outer nodes should be greater than first one (index 0)
 		if numUsed[nextOuter] == 1:
 			continue
 			
@@ -72,23 +69,29 @@ InnerNodes = [0 for i in range(0,5)]
 
 
 
-for outermost in range(1,7):		# this node has to be the smallest outer node so it has smaller range 
+# We will look for solution by counting backwards so we get the max solution first. 
+
+for outermost in range(6,0,-1):		# this node has to be the smallest outer node so it has smaller range 
 	OuterNodes[0] = outermost
 	NumUsed[outermost] = 1
 
-	for innermost in range(1,10):   	# 10 not allowed for inner nodes
+	for innermost in range(9,0,-1):   	# 10 not allowed for inner nodes
 		if NumUsed[innermost]: 
 			continue
 		InnerNodes[0] = innermost
 		NumUsed[innermost] = 1
 
-		for segTotal in range(14,19):    
+		# Not sure if I should be couting backwars for this too..Given a OuterNodes[0] 
+		# and InnerNodes[0], smaller total would ensure a larger InnerNodes[1] so this 
+		# order is probably ok
+		# I have a suspicion that given a value for OuterNodes[0] and InnerNodes[0], all 
+		#  other nodes are pre-determined
+		for segTotal in range(14,19):
 
 			# Walk through each semgent, making sure they add up to segTotal
 			# Shouldn't need to check the last segment.
 			# For each segment: set the missing inner node and outer node for the next segment
 
-			print "invoking with", 0, segTotal, NumUsed, OuterNodes, InnerNodes
 			fillSegment(0, segTotal, NumUsed, OuterNodes, InnerNodes)
 	
 		NumUsed[innermost] = 0
