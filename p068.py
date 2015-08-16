@@ -97,5 +97,5 @@ for outermost in range(6,0,-1):		# this node has to be the smallest outer node s
 		NumUsed[innermost] = 0
 	NumUsed[outermost] = 0
 
-print "Answer = " , MaxSoFar
+print "No answers found"
 
