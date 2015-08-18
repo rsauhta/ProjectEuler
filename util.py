@@ -14,6 +14,8 @@ class PrimeStore:
 		self.numList = [1 for i in range(0,maxN+1)]
 
 		for i in range(2,int(math.sqrt(maxN))+1):
+			if self.numList[i] == 0:
+				continue
 			for j in range(2*i,maxN+1,i):
 				self.numList[j]=0
 
@@ -68,8 +70,6 @@ def testPrimeStore():
 
 	ps2 = PrimeStore(997)
 	assert(len(ps2) == 168)
-
-
 
 
 
