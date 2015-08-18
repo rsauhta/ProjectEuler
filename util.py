@@ -17,10 +17,22 @@ class PrimeStore:
 			for j in range(2*i,maxN+1,i):
 				self.numList[j]=0
 
+		self.list = None
 		self.length = 0
 		for i in range(2,maxN+1):
 			if self.numList[i] == 1:
 				self.length += 1
+
+	def getList(self):
+		if self.list == None:
+			# create a list for applications that need it
+			pList = []
+			for i in range(2,self.maxN+1):
+				if self.numList[i] == 1:
+					pList.append(i)
+			self.list = pList
+		return self.list
+
 
 	def __iter__(self):
 		return _prime_iterator_(self)
