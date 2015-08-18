@@ -5,6 +5,64 @@
 
 import math
 
+
+class PrimeStore:
+	def __init__(self, maxN):
+		"Create a prime store with primes <= maxN"
+
+		self.maxN = maxN
+		self.numList = [1 for i in range(0,maxN+1)]
+
+		for i in range(2,int(math.sqrt(maxN))+1):
+			for j in range(2*i,maxN+1,i):
+				self.numList[j]=0
+
+		self.length = 0
+		for i in range(2,maxN+1):
+			if self.numList[i] == 1:
+				self.length += 1
+
+	def __iter__(self):
+		return _prime_iterator_(self)
+
+	def __len__(self):
+		return self.length
+
+	def isPrime(self, n):
+		if n > self.maxN:
+			raise Exception("range exceeded")
+
+		return self.numList[n] == 1
+	
+class _prime_iterator_:
+	def __init__(self,primeStore):
+		self.primeStore = primeStore
+		self.index = 2
+
+	def next(self):
+		while self.primeStore.numList[self.index] == 0:
+			self.index += 1
+			if self.index > self.primeStore.maxN:
+				raise StopIteration
+		self.index += 1
+		return self.index - 1
+
+	
+def testPrimeStore():
+	ps = PrimeStore(10)
+	assert(ps.isPrime(9) == False)
+	assert(ps.isPrime(3) == True)
+	assert(ps.isPrime(7) == True)
+
+	ps2 = PrimeStore(997)
+	assert(len(ps2) == 168)
+
+
+
+
+
+
+
 PrimeList = []
 
 def _try_composite(a, d, n, s):
@@ -121,23 +179,6 @@ def GetFirstNPrime(n) :
 	return PrimeList[:n]
 
 
-def GetPrimeListFast(n) : 
-	"Returns list of primes <= n. Implementation using sieve method "
-
-	numList = [1 for i in range(0,n+1)]
-
-	for i in range(2,int(math.sqrt(n))):
-		for j in range(2*i,n+1,i):
-			numList[j]=0
-
-	primeList= []
-	for i in range(2,n+1):
-		if numList[i]:
-			primeList.append(i)
-
-	return primeList
-
-
 	
 	           
 
@@ -242,9 +283,10 @@ if __name__ == "__main__":
 	testGetPrimeList()
 	testGetFirstNPrime()
 	testGetDivisors()
+	testPrimeStore()
 
-	print timeit.timeit( 'GetPrimeList(1000000)',setup="from __main__ import GetPrimeList", number = 1)
-	print timeit.timeit( 'GetPrimeListFast(1000000)',setup="from __main__ import GetPrimeListFast", number = 1)
+	print "GetPrimeList =", timeit.timeit( 'GetPrimeList(1000000)',setup="from __main__ import GetPrimeList", number = 1)
+	print "PrimeStore   =", timeit.timeit( 'PrimeStore(1000000)',setup="from __main__ import PrimeStore", number = 1)
 
 
 
