@@ -1,4 +1,4 @@
-#i https://projecteuler.net/problem=191
+# https://projecteuler.net/problem=191
 # Prize string
 #
 
