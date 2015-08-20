@@ -12,6 +12,7 @@ class PrimeStore:
 
 		self.maxN = maxN
 		self.numList = [1 for i in range(0,maxN+1)]
+		self.numList[1] = 0
 
 		for i in range(2,int(math.sqrt(maxN))+1):
 			if self.numList[i] == 0:
