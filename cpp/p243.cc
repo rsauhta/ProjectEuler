@@ -23,8 +23,8 @@ uint32 computeResilience(uint32 numer, uint32 denom)
 	}
 
 
-	cout << "0 =" << int(sieve[0]) << endl;
-	cout << "max =" << int(sieve[max-1]) << endl;
+	//cout << "0 =" << int(sieve[0]) << endl;
+	//cout << "max =" << int(sieve[max-1]) << endl;
 
 
 	for (uint32 i=2; i < max; i++) {
@@ -40,10 +40,12 @@ uint32 computeResilience(uint32 numer, uint32 denom)
 		// phi has been computed. Do this for prime and non-prime
 		// resilience = phi/(i-1) < numer/denom
 		if (sieve[i]*denom < numer*(i-1)) {
+			free(sieve);
 			return i;
 		}
 	}
 
+	free(sieve);
 	return 0;
 } 
  
