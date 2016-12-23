@@ -22,10 +22,6 @@ uint32 sieveSemiprimes(uint32 maxN)
 	uint8 * sieve = (uint8*) malloc(max*sizeof(uint8));
 	memset(sieve, 0, max*sizeof(uint8));
 
-	cout << "0 =" << int(sieve[0]) << endl;
-	cout << "max =" << int(sieve[max-1]) << endl;
-
-
 	for (uint32 i=2; i <= int(sqrt(max)); i++) {
 		// Not a prime
 		if (sieve[i] == 1) continue;
@@ -42,7 +38,7 @@ uint32 sieveSemiprimes(uint32 maxN)
 			primeVector.push_back(i);
 		}
 	}
-	cout << "Size " << primeVector.size() << endl;
+	//cout << "Size " << primeVector.size() << endl;
 
 	uint32 count = 0;
 	for (uint32 i=0; i < primeVector.size(); i++) {
@@ -57,6 +53,7 @@ uint32 sieveSemiprimes(uint32 maxN)
 		}
 	}
 
+	free(sieve);
 
 	return count;
 
