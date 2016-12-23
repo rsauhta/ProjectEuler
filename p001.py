@@ -7,23 +7,20 @@
 # Find the sum of all the multiples of 3 or 5 below 1000.
 #
 
-MaxNumber = 1000
 
-FactorsOf3 = 3
-FactorsOf5 = 5
-currentValue = 1
-SumOfMultiples = 0
+def matches(num):
+    if num % 3 == 0 or num % 5 == 0:
+        return num
+    else:
+        return 0
 
-while 1: 
-        if (currentValue == FactorsOf3):
-                FactorsOf3 += 3
-        if (currentValue == FactorsOf5):
-                FactorsOf5 += 5
+def findAnswer(max):
+    total = 0
+    for i in range(max):
+        total += matches(i)
 
-        currentValue = min(FactorsOf3, FactorsOf5)
-        if (currentValue >= MaxNumber) : 
-                break
-        SumOfMultiples += currentValue
+    return total
 
-print "Sum = ", SumOfMultiples
 
+assert (findAnswer(10) == 23)
+print("For numbers upto 1000: {}".format(findAnswer(1000)))
