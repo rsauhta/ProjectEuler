@@ -14,6 +14,18 @@ def matches(num):
     else:
         return 0
 
+def answerGenerator(maxInt):
+    for i in range(maxInt):
+        if i % 3 == 0 or i % 5 == 0:
+            yield i
+
+
+def findAnswer2(max):
+    total=0
+    for i in answerGenerator(max):
+        total += i
+    return total
+
 def findAnswer(max):
     total = 0
     for i in range(max):
@@ -24,3 +36,4 @@ def findAnswer(max):
 
 assert (findAnswer(10) == 23)
 print("For numbers upto 1000: {}".format(findAnswer(1000)))
+print("For numbers upto 1000: {}".format(findAnswer2(1000)))
