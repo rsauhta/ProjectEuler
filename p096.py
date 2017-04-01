@@ -2,47 +2,131 @@
 # Read sudoku grid from sudoku.txt and solve
 #
 
-import math
-import copy
-from collections import namedtuple
+
+class Matrix:
+	def __init__(self, rows, cols):
+		self.rows = rows
+		self.cols = cols
+		self.grid = [[0 for row in range(0,rows)] for col in range(0,cols)]
+
+	def print(self):
+		for row in self.grid:
+			print("".join(map(str,row)))
+
+	def read(self, filehandle):
+		for row in range(0,self.rows):
+			linestr = filehandle.readline()
+			valueList = list(map(int, list(linestr[:-1])))
+			assert(len(valueList) == self.cols)
+			for col in range(len(valueList)):
+				self.grid[row][col] = valueList[col]
 
 
-def printMatrix(matrix):
-	for row in matrix:
-		print("".join(map(str,row)))
+
+class Cell:
+	def __init__(self, value):
+		# don't think we need row and col
+		self.value = value
+		if value == 0:
+			self.possibleList = list(range(1,10))
+		else:
+			self.possibleList = []
+		self.cellGroupList = []
+
+	def addCellGroup(self, cellGroup):
+		self.cellGroupList.append(cellGroup)
+		assert(len(self.cellGroupList) < 4)
+
+	# return True if this was the last value removed
+	def removePossibleValue(self, value):
+		if self.value > 0:
+			return False
+		if value in self.possibleList:
+			self.possibleList.remove(value)
+			assert(len(self.possibleList) > 0)
+			if (len(self.possibleList) == 1):
+				self.value = self.possibleList[0]
+				self.possibleList=[]
+				return True
+		return False
 
 
-def readMatrix(filehandle):
-	matrix = []
-	for rows in range(0,9):
-		linestr = filehandle.readline()
-		matrix.append(list(map(int, list(linestr[:-1]))))
-	return matrix
+# CellGroup is a collection of 9 cells
+#   Row, Col and 3x3 sub-grid each contains 9 cells
+class CellGroup:
+	def __init__(self):
+		self.cellList = []
 
-
+	def addCell(self, cell):
+		self.cellList.append(cell)
+		assert(len(self.cellList) < 10)
+		cell.addCellGroup(self)
 
 
 class Grid:
+
+
 	def __init__(self, matrix):
-		self.Cell = namedtuple('Cell', "row col value possibleList")
-								# row, col for this cell. Possibly redundant
-								# value = for the cell if known, 0 => value not known yet
-								# possibleList = list of possible values for this cell
 		grid = []
-		possibleList = range(1,10)
+		resolvedList = []
+
+		#possibleList = range(1,10)
 		for row in range(0,9):
 			rowList = []
 			for col in range(0,9):
-				if matrix[row][col] == 0:
-					rowList.append( self.Cell(row, col, matrix[row][col],list(possibleList)))
-				else:
-					rowList.append(self.Cell(row, col, matrix[row][col], []))
+				cell = Cell(matrix.grid[row][col])
+				rowList.append(cell)
+				if matrix.grid[row][col] != 0:
+					resolvedList.append(cell)
 			grid.append(rowList)
 
 		self.grid = grid
-		self.almostResolvedList  = []  # keep track of cells with single value in possibleList
+		self.resolvedList  = resolvedList
 
+		groupList = []
+		# create sub-groups of cell
+		for x in range(0,9):
+			rowGroup = CellGroup()
+			colGroup = CellGroup()
+			subgridGroup = CellGroup()
+				# imagine subgrids are numbered as 0 1 2
+				#                                  3 4 5
+				#                                  6 7 8
+			for y in range(0,9):
+				rowGroup.addCell(grid[x][y])
+				colGroup.addCell(grid[y][x])
 
+				subgridStartRow = 3 * int(x/3)
+				subgridStartCol = 3 * (x % 3)
+				subgridRow = int(y/3)
+				subgridCol = y % 3
+				subgridGroup.addCell(grid[subgridStartRow + subgridRow][subgridStartCol+subgridCol])
+
+		groupList.append(rowGroup)
+		groupList.append(colGroup)
+		groupList.append(subgridGroup)
+		self.groupList = groupList
+
+	def validate(self):
+		for row in range(0,9):
+			for col in range(0,9):
+				cell = self.grid[row][col]
+				if cell.value == 0:
+					assert(len(cell.possibleList) > 0)
+				else:
+					assert(len(cell.possibleList) == 0)
+				assert(len(cell.cellGroupList) == 3)
+		for group in self.groupList:
+			assert(len(group.cellList) == 9)
+
+	def getMatrix(self):
+		matrix = Matrix(9,9)
+		for row in range(0,9):
+			for col in range(0,9):
+				matrix.grid[row][col] = self.grid[row][col].value
+		return matrix
+
+		a =  '''
 
 	def solve(self):
 
@@ -67,38 +151,11 @@ class Grid:
 			resultMatrix.append(rowList)
 		return resultMatrix
 
-	# this cell has known value. Remove this "knownValue" from the corresponding row, col and sub-grid
-	def resolveValue(self,row,col,knownValue):
-		if knownValue in self.grid[row][col].possibleList:
-			self.grid[row][col].possibleList.remove(knownValue)
-		assert(len(self.grid[row][col].possibleList) == 0)
-		if (self.grid[row][col].value == 0):
-			self.grid[row][col] = self.Cell(row,col, knownValue, [])
+'''
 
-		for x in range(0, 9):
-			self.removeValue(row, x, knownValue)
-			self.removeValue(x, col, knownValue)
+	def solve(self):
+		print("do nothing")
 
-		subgridRowStart = row - row % 3
-		subgridColStart = col - col % 3
-		for subrow in range(0, 3):
-			for subcol in range(0, 3):
-				self.removeValue(subgridRowStart + subrow, subgridColStart + subcol, knownValue)
-
-
-	def removeValue(self,row,col,value):
-		possibleList = self.grid[row][col].possibleList
-		if value in possibleList:
-			possibleList.remove(value)
-			if (len(possibleList) < 1):
-				print("failed at", row, col, self.grid[row][col])
-			if len(possibleList) == 1:
-				self.almostResolvedList.append((row,col))
-
-
-def solveSudoku(matrix):
-	solver = Grid(matrix)
-	return solver.solve()
 
 
 
@@ -109,14 +166,20 @@ with open(filename) as filehandle:
 		gridName=filehandle.readline()
 		if gridName == '': break
 
-		matrix=readMatrix(filehandle)
+		matrix = Matrix(9,9)
+		matrix.read(filehandle)
 		print(gridName[:-1])
-		printMatrix(matrix)
+		matrix.print()
 
-		newMatrix = solveSudoku(matrix)
-		print("Solution")
-		printMatrix(newMatrix)
-		print("")
+		grid = Grid(matrix)
+		grid.solve()
+
+		grid.validate()
+		mat = grid.getMatrix()
+		mat.print()
+		#print("Solution")
+		#printMatrix(newMatrix)
+		#print("")
 
 
 
